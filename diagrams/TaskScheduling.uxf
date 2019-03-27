@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>9</zoom_level>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>54</x>
+      <y>387</y>
+      <w>1341</w>
+      <h>540</h>
+    </coordinates>
+    <panel_attributes>task_scheduler
+--
+bg=orange</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>72</x>
+      <y>576</y>
+      <w>351</w>
+      <h>333</h>
+    </coordinates>
+    <panel_attributes>_TaskScheduler_
+--
+- currentTime: long
+- scheduledTasks: BlockingQueue&lt;TaskExecutor&gt; 
+- runningTasks: BlockingQueue&lt;TaskExecutor&gt; 
+- timer: Timers
+- beatingHeart: BeatingHeart
+- scheduledExecutor: ScheduledExecutorService
+- shuttingDown: boolean
+- checkingSchedule: boolean
+--
+- TaskScheduler()
+- setTimer(Timers): void
+- setBeatingHeart(BeatingHeart): void
+- runAtomicTask(TaskConsumer): void
+- runRepeatTask(TaskConsumer): void
+- putScheduledTask(TaskConsumer): void
+- scheduleTask(TaskConsumer): void
+- shutDownScheduler(): void
+- checkSchedule(): void
+- checkHeartbeat(): void
+
++ scheduleTask(TaskConsumer): void
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>990</x>
+      <y>414</y>
+      <w>387</w>
+      <h>162</h>
+    </coordinates>
+    <panel_attributes>1. Uses the Timer suplied to check a task's execution time against 
+     the 'currrent' time.
+     
+2. Check for scheduled tasks every heartbeat.
+
+3. Puts tasks into the task queue if they are not to be executed 
+     immediately.
+     
+4. If a task in the task queue is ready to be executed then ues
+    the TaskExecutor to execute the task.
+
+
+bg=white</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>621</x>
+      <y>18</y>
+      <w>144</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>*  Task Scheduling*
+fontsize=16
+//fontfamily=SansSerif //possible: SansSerif,Serif,Monospaced
+bg=yellow</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>729</x>
+      <y>765</y>
+      <w>225</w>
+      <h>135</h>
+    </coordinates>
+    <panel_attributes>_TaskExecutor_
+--
+- task: TaskRunner
+- taskSchedule: TaskSchedule 
+- startTime: int
+- taskBeat: BeatingHeart
+--
++ TaskExecutor(TaskConsumer task) 
++ taskStartTime(): int
++ startTask(): void</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>720</x>
+      <y>639</y>
+      <w>90</w>
+      <h>45</h>
+    </coordinates>
+    <panel_attributes>_/&lt;&lt;Beatable&gt;&gt;/_
+--
+beat(): void</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>621</x>
+      <y>540</y>
+      <w>279</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>_/&lt;&lt;Observer&gt;&gt;/_
+--
++ updateObserver(): void
++ updateObserver(ObserverMessage msg): void</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>756</x>
+      <y>675</y>
+      <w>90</w>
+      <h>108</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.
+Implements</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;100.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>828</x>
+      <y>585</y>
+      <w>90</w>
+      <h>198</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.
+Implements</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;200.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>171</x>
+      <y>315</y>
+      <w>630</w>
+      <h>279</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;uses&gt;&gt;</panel_attributes>
+    <additional_attributes>680.0;10.0;680.0;120.0;10.0;120.0;10.0;290.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>765</x>
+      <y>279</y>
+      <w>171</w>
+      <h>45</h>
+    </coordinates>
+    <panel_attributes>_/&lt;&lt;TaskConsumer&gt;&gt;/_
+--
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>630</x>
+      <y>279</y>
+      <w>153</w>
+      <h>36</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;depends&gt;&gt;</panel_attributes>
+    <additional_attributes>10.0;20.0;150.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>459</x>
+      <y>81</y>
+      <w>486</w>
+      <h>270</h>
+    </coordinates>
+    <panel_attributes>tasks
+--
+bg=orange</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>468</x>
+      <y>279</y>
+      <w>171</w>
+      <h>45</h>
+    </coordinates>
+    <panel_attributes>_/&lt;&lt;TaskInjector&gt;&gt;/_
+--
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>540</x>
+      <y>180</y>
+      <w>270</w>
+      <h>117</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;depends&gt;&gt;</panel_attributes>
+    <additional_attributes>250.0;10.0;210.0;10.0;210.0;80.0;10.0;80.0;10.0;110.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>765</x>
+      <y>126</y>
+      <w>171</w>
+      <h>81</h>
+    </coordinates>
+    <panel_attributes>/&lt;&lt;TaskSchedule&gt;&gt;/
+--
+scheduledStartTime(): int
+scheduledEndTime(): int
+scheduledDuration(): long
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>693</x>
+      <y>153</y>
+      <w>90</w>
+      <h>36</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.
+</panel_attributes>
+    <additional_attributes>10.0;20.0;80.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>468</x>
+      <y>117</y>
+      <w>234</w>
+      <h>108</h>
+    </coordinates>
+    <panel_attributes>_ScheduledTime_
+--
+- startTimeSeconds: int
+- endTimeSeconds: int	
+- durationSeconds: long
+- startTimeFormatter: MutableTime	
+- endTimeFormatter:  MutableTime</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>909</x>
+      <y>315</y>
+      <w>90</w>
+      <h>468</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;depends&gt;&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;500.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>207</x>
+      <y>441</y>
+      <w>396</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>_TaskSchedulerHelper_
+--
+_+ instanceOfTaskScheduler(Timers, BeatingHeart): TaskScheduler_</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>414</x>
+      <y>783</y>
+      <w>333</w>
+      <h>36</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;uses&gt;&gt;</panel_attributes>
+    <additional_attributes>350.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>234</x>
+      <y>486</y>
+      <w>63</w>
+      <h>108</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;uses&gt;&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;100.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>297</x>
+      <y>540</y>
+      <w>342</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.
+Implements</panel_attributes>
+    <additional_attributes>360.0;20.0;10.0;20.0;10.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>486</x>
+      <y>549</y>
+      <w>252</w>
+      <h>126</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.
+</panel_attributes>
+    <additional_attributes>260.0;120.0;10.0;120.0;10.0;10.0</additional_attributes>
+  </element>
+</diagram>
