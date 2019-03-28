@@ -86,7 +86,8 @@ public class TaskManager implements Beatable, Observer {
 	 *  time should be at the head of the queue. That is not guaranteed at present.
 	 */
 	private void putScheduledTask(TaskConsumer task) {
-		if(task.getTask().taskSchedule().scheduledStartTime() > 0) { // TODO - Add latest possible start time.
+		int startTime = task.getTask().taskSchedule().scheduledStartTime(); 
+		if(startTime > 0 && !shuttingDown) { // TODO - Add latest possible start time.
 			try {
 				scheduledTasks.put(new TaskExecutor(task));
 			} catch (InterruptedException e) {
@@ -108,7 +109,7 @@ public class TaskManager implements Beatable, Observer {
 	 *  Register us as an observer.
 	 */
 	private void checkHeartbeat() {
-		if(!beatingHeart.isBeating()) 
+		if(!beatingHeart.isBeating() && !shuttingDown) 
 			beatingHeart.startBeating(this, this);
 	}
 	
@@ -150,25 +151,43 @@ public class TaskManager implements Beatable, Observer {
 	}
 	
 	/*
-	 *  Shut down the executor service and heartbeat.
-	 *  
-	 *  TODO - Do something with any outstanding scheduled task in the queue.
+	 *  Make this object sleep for the specified milliseconds.
+	 *  Allows tasks to still be managed even if we're shutting down.
 	 */
-	private void shutDownTaskManager() {
-		// System.out.println("Told to stop TS HB"); 	// TODO - Log
+	private void pause(long p) {
+		try {
+			Thread.sleep(p);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/*
+	 *  Shut down the executor service and heartbeat.
+	 *  If there are already scheduled tasks there will be 
+	 *  an attempt to execute them before we're shut down.   
+	 */
+	private void shutDownTaskManager(int attemptToShutdown) {
 		
 		shuttingDown = true;
-		taskExecutor.shutdown();			// Stop any non-scheduled repeating tasks.
-		stopRunningTasks();					// Stop any scheduled, running tasks.
-		beatingHeart.stopBeating();
-
-		try {								// TODO - Configure time period
-			if(!taskExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
-				taskExecutor.shutdownNow();
+		stopRunningTasks();						// Stop any tasks already running.
+		
+		if(scheduledTasks.isEmpty() || attemptToShutdown > 50) {
+			// System.out.println(attemptToShutdown + " attempt to shut down the TaskManager."); // TODO - R/Log
+			beatingHeart.stopBeating();
+	
+			taskExecutor.shutdown();			
+			try {								// TODO - Configure time period
+				if(!taskExecutor.awaitTermination(2, TimeUnit.SECONDS)) {
+					taskExecutor.shutdownNow();
+				}
+			} catch (InterruptedException e) {
+				System.out.println("Error shutting down TS"); // TODO - Log
+				taskExecutor.shutdownNow();	
 			}
-		} catch (InterruptedException e) {
-			System.out.println("Error shutting down TS"); // TODO - Log
-			taskExecutor.shutdownNow();	
+		}else {
+			pause(250);							// Wait and then try again.
+			shutDownTaskManager(++attemptToShutdown);
 		}
 	}
 	
@@ -227,14 +246,14 @@ public class TaskManager implements Beatable, Observer {
 	}
 	
 	/*
-	 *  Called if this object's heart beat is stopped.
+	 *  Called if this object's heart beat is stopped, i.e. we're shutting down.
 	 */
 	@Override
 	public void updateObserver(ObserverMessage msg) {
 		// Get message from HO. Only interested in a shutdown message.
 		if(msg == ObserverMessage.STOPPING && shuttingDown == false) {
-			shutDownTaskManager();
-			// System.out.println("Observer Message (" + msg + ")"); // TODO - R/Log
+			pause(500); // Pause to see if any shutdown tasks are added. TODO - Remove?
+			shutDownTaskManager(1);
 		}
 	}
 	
