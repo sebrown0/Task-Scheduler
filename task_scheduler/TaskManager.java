@@ -190,7 +190,7 @@ public class TaskManager implements Beatable, Observer {
 		checkingSchedule = true;		// Set the class level flag so that we're not called again by beat() while we're still checking.
 	
 		// Keep checking the queue while there's a possibility of there being a task to execute at this time.
-		while(stillChecking && ((scheduledTask = scheduledTasks.peek()) != null)) {					
+		while(stillChecking && ((scheduledTask = scheduledTasks.peek()) != null)) {		
 			try {
 				if(scheduledTask.taskStartTime() == currentTime) {
 					scheduledTask = scheduledTasks.take();
@@ -200,7 +200,7 @@ public class TaskManager implements Beatable, Observer {
 					stillChecking = false;
 				}
 			} catch (InterruptedException e) {
-				e.printStackTrace(); 			// TODO - Log
+				e.printStackTrace(); 				// TODO - Log
 			}
 		}
 		checkingSchedule = false;
@@ -216,7 +216,7 @@ public class TaskManager implements Beatable, Observer {
 
 		beatingHeart.anotherBeat();					// Increment the beat count.
 		currentTime = timer.currentTime();			// Get the current time for this object.
-		
+
 		if(!shuttingDown && timer.timerRunning()) {	// Do work in here..
 			// Keep this 'if statement' separate in case we do other work in here. 
 			if(!checkingSchedule) {		
