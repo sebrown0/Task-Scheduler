@@ -40,7 +40,7 @@ public class TaskManager implements Beatable, Observer {
 												// Executor for non scheduled tasks.
 	private ScheduledExecutorService taskExecutor = Executors.newScheduledThreadPool(20);
 												// Running tasks are stored as observers. 
-	private Subject runningTasks = new GenericSubject("TaskScheduler");
+	private Subject runningTasks = new GenericSubject("TaskManager");
 	private boolean shuttingDown = false;		// Is the scheduler shutting down. 
 	private boolean checkingSchedule = false;	// Is the scheduler checking the queue.
 
@@ -154,7 +154,7 @@ public class TaskManager implements Beatable, Observer {
 	 *  
 	 *  TODO - Do something with any outstanding scheduled task in the queue.
 	 */
-	private void shutDownScheduler() {
+	private void shutDownTaskManager() {
 		// System.out.println("Told to stop TS HB"); 	// TODO - Log
 		
 		shuttingDown = true;
@@ -233,7 +233,7 @@ public class TaskManager implements Beatable, Observer {
 	public void updateObserver(ObserverMessage msg) {
 		// Get message from HO. Only interested in a shutdown message.
 		if(msg == ObserverMessage.STOPPING && shuttingDown == false) {
-			shutDownScheduler();
+			shutDownTaskManager();
 			// System.out.println("Observer Message (" + msg + ")"); // TODO - R/Log
 		}
 	}
@@ -245,7 +245,7 @@ public class TaskManager implements Beatable, Observer {
 	 *   	1. Timers: the applications overall timer.
 	 *   	2. BeatingHeart: the heart beat for the TaskScheduler.   
 	 */
-	public static class  TaskSchedulerHelper{
+	public static class  TaskManagerHelper{
 		private static final TaskManager INSTANCE = new TaskManager();
 		
 		/*
