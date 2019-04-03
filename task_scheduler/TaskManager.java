@@ -15,22 +15,23 @@ import observer.GenericSubject;
 import observer.Observer;
 import observer.ObserverMessage;
 import observer.Subject;
-import tasks.TaskConsumer;
-import tasks.TypeOfTask;
+import tasks.task_creators.ScheduledTaskRunner;
+import tasks.task_creators.TaskConsumer;
+import tasks.task_creators.TypeOfTask;
 import timer.Timers;
+import utils.Log;
 
 /**
  * @author Steve Brown
  *
  *  Used to schedule and execute tasks.
- *  It is a Singleton object as we only ever want one instance of this per app.
  *  
  *  A task is presented using manageTask(TaskConsumer).
  *  If it is a non-scheduled task it is executed immediately.
  *  If it is a scheduled task it is added to the queue so that it can be executed at the correct time.
  */
 
-public class TaskManager implements Beatable, Observer {
+public class TaskManager implements Manager, Beatable, Observer {
 	
 	private long currentTime = 0;				// The current time in seconds.
 												// A queue containg any scheduled tasks.
@@ -43,11 +44,16 @@ public class TaskManager implements Beatable, Observer {
 	private Subject runningTasks = new GenericSubject("TaskManager");
 	private boolean shuttingDown = false;		// Is the scheduler shutting down. 
 	private boolean checkingSchedule = false;	// Is the scheduler checking the queue.
+	private Log log;
 
 	/*
-	 *	Singleton so cannot be instantiated. 
+	 *	 TODO
 	 */
-	private TaskManager() {}
+	public TaskManager(Timers timer, BeatingHeart beatingHeart, Log log) {
+		this.timer = timer;
+		this.beatingHeart = beatingHeart;
+		this.log = log;
+	}
 		
 	/*
 	 *  TaskSchedulerHelper can call this to set this object's Timer.
@@ -86,7 +92,9 @@ public class TaskManager implements Beatable, Observer {
 	 *  time should be at the head of the queue. That is not guaranteed at present.
 	 */
 	private void putScheduledTask(TaskConsumer task) {
-		int startTime = task.getTask().taskSchedule().scheduledStartTime(); 
+		ScheduledTaskRunner runner = (ScheduledTaskRunner) task.getTask(); 
+		int startTime = runner.tasksDetails().getTaskSchedule().scheduledStartTime();
+		
 		if(startTime > 0 && !shuttingDown) { // TODO - Add latest possible start time.
 			try {
 				scheduledTasks.put(new TaskExecutor(task));
@@ -117,13 +125,17 @@ public class TaskManager implements Beatable, Observer {
 	 *  Given a task. If it's a scheduled task then add it to the queue.
 	 *  If it's non scheduled task run it straight away.  
 	 */
+	@Override
 	public void manageTask(TaskConsumer task) {
-		TypeOfTask typeOfTask = task.getTask().typeOfTask();
-			
+		
+		TypeOfTask typeOfTask = task.getTask().tasksDetails().getTaskType();
+		
+		log.logEntry("manageTask - TODO", typeOfTask.name()); // TODO - Objid
 		checkHeartbeat();			// Start the HB on demand.
 					
 		switch (typeOfTask) {
 		case ATOMIC:
+			log.logEntry("manageTask - TODO", "Running Atomic TasK"); // TODO - Objid
 			runAtomicTask(task);
 			break;
 			
@@ -264,17 +276,17 @@ public class TaskManager implements Beatable, Observer {
 	 *   	1. Timers: the applications overall timer.
 	 *   	2. BeatingHeart: the heart beat for the TaskScheduler.   
 	 */
-	public static class  TaskManagerHelper{
-		private static final TaskManager INSTANCE = new TaskManager();
-		
-		/*
-		 *  Return the instance of TaskScheduler with its Timer and HeartBeat set.
-		 */
-		public static TaskManager instanceOfTaskScheduler(Timers timer, BeatingHeart beatingHeart) {
-			INSTANCE.setTimer(timer);
-			INSTANCE.setBeatingHeart(beatingHeart);
-			return INSTANCE;
-		}
-	}
+//	public static class  TaskManagerHelper{
+//		private static final TaskManager INSTANCE = new TaskManager();
+//		
+//		/*
+//		 *  Return the instance of TaskScheduler with its Timer and HeartBeat set.
+//		 */
+//		public static TaskManager instanceOfTaskManager(Timers timer, BeatingHeart beatingHeart) {
+//			INSTANCE.setTimer(timer);
+//			INSTANCE.setBeatingHeart(beatingHeart);
+//			return INSTANCE;
+//		}
+//	}
 }
 	

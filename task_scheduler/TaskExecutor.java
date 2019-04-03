@@ -8,9 +8,9 @@ import heartbeat.BeatingHeart;
 import heartbeat.SlowHeartbeat;
 import observer.Observer;
 import observer.ObserverMessage;
-import tasks.TaskConsumer;
-import tasks.TaskRunner;
-import tasks.TaskSchedule;
+import tasks.task_creators.ScheduledTaskRunner;
+import tasks.task_creators.TaskConsumer;
+import tasks.task_creators.TaskSchedule;
 
 /**
  * @author Steve Brown
@@ -20,7 +20,7 @@ import tasks.TaskSchedule;
  */
 public class TaskExecutor implements  Observer, Beatable { 
 
-	private TaskRunner task;						// The task to execute.
+	private ScheduledTaskRunner task;						// The task to execute.
 	private TaskSchedule taskSchedule; 				// The task's schedule.
 	private BeatingHeart taskBeat;					// The regularity of the task's execution.  
 	
@@ -28,8 +28,8 @@ public class TaskExecutor implements  Observer, Beatable {
 	 *  New TaskExecutor with task. Get it's schedule and assign to class level schedule.
 	 */
 	public TaskExecutor(TaskConsumer task) {
-		this.task = task.getTask();
-		this.taskSchedule = task.getTask().taskSchedule();		
+		this.task = (ScheduledTaskRunner) task.getTask();
+		this.taskSchedule = ((ScheduledTaskRunner) task.getTask()).tasksDetails().getTaskSchedule();		
 	}
 
 	/* 
