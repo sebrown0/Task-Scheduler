@@ -6,6 +6,7 @@ package task_scheduler;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import heartbeat.Beatable;
 import heartbeat.BeatingHeart;
@@ -42,20 +43,17 @@ public class TaskManager implements Beatable, Observer, Manager {
 												// Running tasks are stored as observers. 
 	private Subject runningTasks = new GenericSubject("TaskManager");
 	private boolean shuttingDown = false;		// Is the scheduler shutting down. 
-	private boolean alreadyCheckingSchedule = false;	// Is the scheduler checking the queue.
-	private Log log;
-
 	private TaskAllocator taskAllocator = new TaskAllocator();
 	private ScheduledTaskList scheduledTasks = new ScheduledTaskHolder();
 	private ExecutableTaskList executableTasks = new ExecutableTaskHolder();
+	private AtomicBoolean alreadyRunningExecutableTasks = new AtomicBoolean(false);
+	private AtomicBoolean alreadyCheckingSchedule =  new AtomicBoolean(false);
 	
 	// GIVE THIS A DealerDAO!!!! ??????????
 	
 	public TaskManager(Timers timer, BeatingHeart beatingHeart, Log log) {
 		this.timer = timer;
 		this.beatingHeart = beatingHeart;
-		this.log = log;
-		
 		this.taskAllocator.setSchedulableTasks(scheduledTasks);
 		this.taskAllocator.setExecutableTasks(executableTasks);
 				
@@ -79,9 +77,9 @@ public class TaskManager implements Beatable, Observer, Manager {
 	@Override
 	public void beat() {
 		incrementHeartBeat();
-		if(notShuttingDown()) {		
+		if(notShuttingDown() && notAlreadyExecutingAtomicTasks()) {		
 			executeAtomicTasks(); 
-			if(!alreadyCheckingSchedule) 	
+			if(!alreadyCheckingSchedule.get()) 	
 				checkSchedule();
 		}
 	}
@@ -94,20 +92,26 @@ public class TaskManager implements Beatable, Observer, Manager {
 		return (!shuttingDown && timerRunning());
 	}
 	
+	private boolean notAlreadyExecutingAtomicTasks() {
+		return !alreadyRunningExecutableTasks.get();
+	}
+	
 	private boolean timerRunning() {
 		return timer.timerRunning();
 	}
 			
 	private void executeAtomicTasks() {
-		if(executableTasks.isNotEmpty()) //While????
-			new Thread(executableTasks.getAndRemoveNextTask()).run();
+		alreadyRunningExecutableTasks.set(true);
+		while(executableTasks.isNotEmpty()) 
+			executableTasks.getAndRemoveNextTask().executeTask();;
+		alreadyRunningExecutableTasks.set(false);
 	}
 		
 	private void checkSchedule() {	
-		alreadyCheckingSchedule = true;	
+		alreadyCheckingSchedule.set(true);;	
 		if(scheduledTasks.isNotEmpty() && !shuttingDown) //while
 			checkTasksStartTime();
-		alreadyCheckingSchedule = false;
+		alreadyCheckingSchedule.set(false);
 	}
 
 	private void checkTasksStartTime() {
