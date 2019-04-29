@@ -21,7 +21,7 @@ import task_list.ScheduledTaskList;
 import task_strategy.TaskAllocator;
 import tasks.task_super_objects.ScheduledTask;
 import tasks.task_super_objects.Task;
-import timer.Timers;
+import timer.Timer;
 import utils.Log;
 
 /**
@@ -36,7 +36,7 @@ import utils.Log;
 
 public class TaskManager implements Beatable, Observer, Manager {
 	
-	private Timers timer = null;				// Application Timer.
+	private Timer timer = null;				// Application Timer.
 	private BeatingHeart beatingHeart = null;	// HeartBeat of the scheduler.
 												// Executor for non scheduled tasks.
 	private ScheduledExecutorService taskExecutor = Executors.newScheduledThreadPool(20);
@@ -51,7 +51,7 @@ public class TaskManager implements Beatable, Observer, Manager {
 	
 	// GIVE THIS A DealerDAO!!!! ??????????
 	
-	public TaskManager(Timers timer, BeatingHeart beatingHeart, Log log) {
+	public TaskManager(Timer timer, BeatingHeart beatingHeart, Log log) {
 		this.timer = timer;
 		this.beatingHeart = beatingHeart;
 		this.taskAllocator.setSchedulableTasks(scheduledTasks);
