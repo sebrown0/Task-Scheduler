@@ -24,8 +24,8 @@ import tasks.task_super_objects.ManagementTask;
 import tasks.task_super_objects.ScheduledTask;
 import tasks.task_super_objects.Task;
 import timer.Timer;
-import utils.Log;
-import utils.Loggable;
+import utils.logger.Log;
+import utils.logger.Loggable;
 
 /**
  * @author Steve Brown
