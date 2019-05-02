@@ -19,10 +19,13 @@ import task_list.ExecutableTaskList;
 import task_list.ScheduledTaskHolder;
 import task_list.ScheduledTaskList;
 import task_strategy.TaskAllocator;
+import tasks.task_super_objects.AtomicTask;
+import tasks.task_super_objects.ManagementTask;
 import tasks.task_super_objects.ScheduledTask;
 import tasks.task_super_objects.Task;
 import timer.Timer;
 import utils.Log;
+import utils.Loggable;
 
 /**
  * @author Steve Brown
@@ -34,7 +37,7 @@ import utils.Log;
  *  If it is a scheduled task it is added to the queue so that it can be executed at the correct time.
  */
 
-public class TaskManager implements Beatable, Observer, Manager {
+public class TaskManager implements Beatable, Observer, Manager, Loggable {
 	
 	private Timer timer = null;				// Application Timer.
 	private BeatingHeart beatingHeart = null;	// HeartBeat of the scheduler.
@@ -48,12 +51,12 @@ public class TaskManager implements Beatable, Observer, Manager {
 	private ExecutableTaskList executableTasks = new ExecutableTaskHolder();
 	private AtomicBoolean alreadyRunningExecutableTasks = new AtomicBoolean(false);
 	private AtomicBoolean alreadyCheckingSchedule =  new AtomicBoolean(false);
-	
-	// GIVE THIS A DealerDAO!!!! ??????????
+	private Log log;
 	
 	public TaskManager(Timer timer, BeatingHeart beatingHeart, Log log) {
 		this.timer = timer;
 		this.beatingHeart = beatingHeart;
+		this.log = log;
 		this.taskAllocator.setSchedulableTasks(scheduledTasks);
 		this.taskAllocator.setExecutableTasks(executableTasks);
 				
@@ -78,7 +81,7 @@ public class TaskManager implements Beatable, Observer, Manager {
 	public void beat() {
 		incrementHeartBeat();
 		if(notShuttingDown() && notAlreadyExecutingAtomicTasks()) {		
-			executeAtomicTasks(); 
+			checkAtomicTasks(); 
 			if(!alreadyCheckingSchedule.get()) 	
 				checkSchedule();
 		}
@@ -100,13 +103,28 @@ public class TaskManager implements Beatable, Observer, Manager {
 		return timer.timerRunning();
 	}
 			
-	private void executeAtomicTasks() {
+	private void checkAtomicTasks() {
 		alreadyRunningExecutableTasks.set(true);
 		while(executableTasks.isNotEmpty()) 
-			executableTasks.getAndRemoveNextTask().executeTask();;
+			executeAtomicTasks();	
 		alreadyRunningExecutableTasks.set(false);
 	}
 		
+	private void executeAtomicTasks() {
+		Task t = executableTasks.getAndRemoveNextTask();
+		if(t instanceof ManagementTask) {
+			t.getTasksDepartment().getDeptManager().performTask(t);
+		}else if(t instanceof AtomicTask){
+			if(t.getTasksDepartment().managersDuties() == null) {
+				t.getTasksDepartment().managersDuties().delegateTask(t);
+			}else {
+				// DO SOMETHING WITH THE TASK
+			}
+		}else {
+			// DO SOMETHING WITH THE TASK
+		}
+	}
+	
 	private void checkSchedule() {	
 		alreadyCheckingSchedule.set(true);;	
 		if(scheduledTasks.isNotEmpty() && !shuttingDown) //while
@@ -167,16 +185,14 @@ public class TaskManager implements Beatable, Observer, Manager {
 		stopRunningTasks();						// Stop any tasks already running.
 		
 		if(!scheduledTasks.isNotEmpty() || attemptedShutdown > 50) {
-			// System.out.println(attemptToShutdown + " attempt to shut down the TaskManager."); // TODO - R/Log
 			beatingHeart.stopBeating();
-	
 			taskExecutor.shutdown();			
 			try {								// TODO - Configure time period
 				if(!taskExecutor.awaitTermination(2, TimeUnit.SECONDS)) {
 					taskExecutor.shutdownNow();
 				}
 			} catch (InterruptedException e) {
-				System.out.println("Error shutting down TS"); // TODO - Log
+				log.logEntry(this, "Error shutting down Task Manager");
 				taskExecutor.shutdownNow();	
 			}
 		}else {
@@ -189,53 +205,3 @@ public class TaskManager implements Beatable, Observer, Manager {
 		t.accept(taskAllocator);
 	}
 }
-	
-	/*
-	 *  Register a running task as an observer so that we can stop 
-	 *  it if the scheduler closes down.
-	 */
-//	private void addRunningTask(ScheduledExecutor task) {
-//		runningTasks.registerObserver(task);
-//	}
-	
-	/*
-	 *  If a task has a scheduled start time put it on the scheduledTasks queue.
-	 *  It will stay there until it's scheduled start time arrives.
-	 *  
-	 *  TODO - This is a FIFO queue and the task(s) with the earliest start
-	 *  time should be at the head of the queue. That is not guaranteed at present.
-	 */
-//	private void putScheduledTask(ScheduledTask task) {
-//		int startTime = task.getTasksSchedule().scheduledStartTime();
-//		
-//		if(startTime > 0 && !shuttingDown) { // TODO - Add latest possible start time.
-//			try {
-//				scheduledTasks.put(new ScheduledExecutor(task));
-//			} catch (InterruptedException e) {
-//				e.printStackTrace();	// TODO - Log
-//			}
-//		}
-//	}
-
-//	private void printAtomicList() {
-//	System.out.println("\nPRINTNG ATOMIC LIST");
-//	List<Task> tasks = executableTasks.getTaskList();
-//	for (Task task : tasks) 
-//		System.out.println(task.getTasksDetails().getMsg());
-//}
-
-//private void printScheduledList() {
-//	System.out.println("\nPRINTNG SCHEDULED LIST");
-//	List<Task> tasks = scheduledTasks.getTaskList();
-//	for (Task task : tasks) 
-//		System.out.println(task.getTasksDetails().getMsg());
-//}	
-	
-
-	/*
-	 *  This task will run continuously for the life time of the app
-	 *  or until TaskScheduler is told to shut down. 
-	 */
-//	private void runRepeatTask(TaskConsumer_OLD task) {
-//		taskExecutor.scheduleWithFixedDelay(task, 1, 1, TimeUnit.SECONDS);
-//	}

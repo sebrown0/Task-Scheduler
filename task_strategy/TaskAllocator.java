@@ -5,6 +5,7 @@ import task_list.ExecutableTaskList;
 import task_list.ScheduledTaskHolder;
 import task_list.ScheduledTaskList;
 import tasks.task_super_objects.AtomicTask;
+import tasks.task_super_objects.ManagementTask;
 import tasks.task_super_objects.ScheduledTask;
 
 /**
@@ -22,13 +23,11 @@ public class TaskAllocator implements TaskListVisitor, TaskAllocatorStrategy {
 
 	@Override
 	public void setSchedulableTasks(ScheduledTaskList scheduledTasks) {
-		this.scheduledTasks = new ScheduledTaskHolder();
 		this.scheduledTasks = scheduledTasks;
 	}
 
 	@Override
 	public void setExecutableTasks(ExecutableTaskList executableTasks) {
-		this.executableTasks = new ExecutableTaskHolder();
 		this.executableTasks = executableTasks;
 	}
 	
@@ -40,5 +39,10 @@ public class TaskAllocator implements TaskListVisitor, TaskAllocatorStrategy {
 	@Override
 	public void addTask(ScheduledTask task) {
 		scheduledTasks.addTask(task);
+	}
+
+	@Override
+	public void addTask(ManagementTask task) {
+		executableTasks.addTask(task);
 	}
 }
