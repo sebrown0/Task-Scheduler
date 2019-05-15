@@ -39,7 +39,7 @@ import utils.logger.Loggable;
 
 public class TaskManager implements Beatable, Observer, Manager, Loggable {
 	
-	private Timer timer = null;				// Application Timer.
+	private Timer appTimer = null;				// Application Timer.
 	private BeatingHeart beatingHeart = null;	// HeartBeat of the scheduler.
 												// Executor for non scheduled tasks.
 	private ScheduledExecutorService taskExecutor = Executors.newScheduledThreadPool(20);
@@ -54,7 +54,7 @@ public class TaskManager implements Beatable, Observer, Manager, Loggable {
 	private Log log;
 	
 	public TaskManager(Timer timer, BeatingHeart beatingHeart, Log log) {
-		this.timer = timer;
+		this.appTimer = timer;
 		this.beatingHeart = beatingHeart;
 		this.log = log;
 		this.taskAllocator.setSchedulableTasks(scheduledTasks);
@@ -100,7 +100,7 @@ public class TaskManager implements Beatable, Observer, Manager, Loggable {
 	}
 	
 	private boolean timerRunning() {
-		return timer.timerRunning();
+		return appTimer.timerRunning();
 	}
 			
 	private void checkAtomicTasks() {
@@ -109,14 +109,14 @@ public class TaskManager implements Beatable, Observer, Manager, Loggable {
 			executeAtomicTasks();	
 		alreadyRunningExecutableTasks.set(false);
 	}
-		
+	
 	private void executeAtomicTasks() {
-		Task t = executableTasks.getAndRemoveNextTask();
-		if(t instanceof ManagementTask) {
-			t.getTasksDepartment().getDeptManager().performTask(t);
-		}else if(t instanceof AtomicTask){
-			if(t.getTasksDepartment().managersDuties() == null) {
-				t.getTasksDepartment().managersDuties().delegateTask(t);
+		Task task = executableTasks.getAndRemoveNextTask();
+		if(task instanceof ManagementTask) {
+			task.getTasksDepartment().getDeptManager().performTask(task);
+		}else if(task instanceof AtomicTask){
+			if(task.getTasksDepartment().deptHasManager()) {
+				task.getTasksDepartment().assignTaskToDeptManager(task);
 			}else {
 				// DO SOMETHING WITH THE TASK
 			}
@@ -124,9 +124,9 @@ public class TaskManager implements Beatable, Observer, Manager, Loggable {
 			// DO SOMETHING WITH THE TASK
 		}
 	}
-	
+
 	private void checkSchedule() {	
-		alreadyCheckingSchedule.set(true);;	
+		alreadyCheckingSchedule.set(true);
 		if(scheduledTasks.isNotEmpty() && !shuttingDown) //while
 			checkTasksStartTime();
 		alreadyCheckingSchedule.set(false);
@@ -134,14 +134,21 @@ public class TaskManager implements Beatable, Observer, Manager, Loggable {
 
 	private void checkTasksStartTime() {
 		ScheduledTask nextTask = (ScheduledTask) scheduledTasks.peekAtNextTask();
-		int startTime = nextTask.getStartTime();
+		int scheduledStartTime = nextTask.getStartTime();
 		
-		if(startTime == timer.currentTime()) 
-			executeScheduledTask(scheduledTasks.getAndRemoveNextTask());
+		if(scheduledStartTime == now()) 
+			giveTaskToDeptManager(scheduledTasks.getAndRemoveNextTask());
 	}
 
-	private void executeScheduledTask(Task t) {
-		t.executeTask();
+	private int now() {
+		return appTimer.currentTime();
+	}
+	
+	private void giveTaskToDeptManager(Task task) {
+		if(task.getTasksDepartment().deptHasManager()) 
+			task.getTasksDepartment().assignTaskToDeptManager(task);
+		else
+			log.logEntry(this, "No department manager available to receive task: " + task.objectID() );		
 	}
 	
 	/*
