@@ -9,6 +9,7 @@ import tasks.task_super_objects.Task;
  * 
  * @author Steve Brown
  *
+ *  Wrapper around a List for Task objects.
  */
 public abstract class TaskHolder implements TaskList, AddTask {
 

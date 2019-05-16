@@ -1,8 +1,6 @@
 package task_strategy;
 
-import task_list.ExecutableTaskHolder;
 import task_list.ExecutableTaskList;
-import task_list.ScheduledTaskHolder;
 import task_list.ScheduledTaskList;
 import tasks.task_super_objects.AtomicTask;
 import tasks.task_super_objects.ManagementTask;
