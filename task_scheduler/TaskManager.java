@@ -3,6 +3,8 @@
  */
 package task_scheduler;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -127,7 +129,7 @@ public class TaskManager implements Beatable, Observer, Manager, Loggable {
 
 	private void checkSchedule() {	
 		alreadyCheckingSchedule.set(true);
-		if(scheduledTasks.isNotEmpty() && !shuttingDown) //while
+		if(scheduledTasks.isNotEmpty() && !shuttingDown) 
 			checkTasksStartTime();
 		alreadyCheckingSchedule.set(false);
 	}
@@ -135,7 +137,7 @@ public class TaskManager implements Beatable, Observer, Manager, Loggable {
 	private void checkTasksStartTime() {
 		ScheduledTask nextTask = (ScheduledTask) scheduledTasks.peekAtNextTask();
 		int scheduledStartTime = nextTask.getStartTime();
-		
+
 		if(scheduledStartTime == now()) 
 			giveTaskToDeptManager(scheduledTasks.getAndRemoveNextTask());
 	}
@@ -149,6 +151,16 @@ public class TaskManager implements Beatable, Observer, Manager, Loggable {
 			task.getTasksDepartment().assignTaskToDeptManager(task);
 		else
 			log.logEntry(this, "No department manager available to receive task: " + task.objectID() );		
+	}
+	
+	public void logTaskList(ScheduledTaskList schList) {
+		if(schList.isNotEmpty()) {
+			List<Task> tempList = new ArrayList<>();
+			tempList.addAll(schList.getTaskList());
+			int i = 1;
+			for(Task t : tempList) 
+				log.logEntry(this, "Task (" + i++ + ") in scheduled list = " + t.objectID());
+		}
 	}
 	
 	/*
@@ -209,7 +221,11 @@ public class TaskManager implements Beatable, Observer, Manager, Loggable {
 	}
 
 	public <T extends Task> void giveTask(T t) {
-		log.logEntry(this, "TM Accepting task ->>>>>>>>>> " + t.objectID());
 		t.accept(taskAllocator);
+		if(t instanceof ScheduledTask) {
+			ScheduledTask s = (ScheduledTask) t;
+			log.logEntry(this, "TM Accepting task -> " + s.objectID() + " to run at -> " + s.getStartTime() );
+			logTaskList(scheduledTasks);
+		}
 	}
 }

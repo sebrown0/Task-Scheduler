@@ -16,6 +16,10 @@ public abstract class TaskHolder implements TaskList, AddTask {
 	protected List<Task> taskList = new ArrayList<>();
 	private int numberOfTasks = 0;
 	
+	public void incrementNumOfTasks() {
+		numberOfTasks++;
+	}
+	
 	@Override
 	public Task getAndRemoveNextTask() {
 		numberOfTasks--;

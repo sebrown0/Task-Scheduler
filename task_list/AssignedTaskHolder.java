@@ -27,7 +27,8 @@ public class AssignedTaskHolder implements ManagementTaskList{
 
 	@Override
 	public void removeAssignedTask(Employee e) {
-		assignedTasks.remove(e);
+		if(!assignedTasks.isEmpty())
+			assignedTasks.remove(e);
 	}
 
 	@Override
