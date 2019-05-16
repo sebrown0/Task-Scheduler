@@ -209,6 +209,7 @@ public class TaskManager implements Beatable, Observer, Manager, Loggable {
 	}
 
 	public <T extends Task> void giveTask(T t) {
+		log.logEntry(this, "TM Accepting task ->>>>>>>>>> " + t.objectID());
 		t.accept(taskAllocator);
 	}
 }

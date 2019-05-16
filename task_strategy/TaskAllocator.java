@@ -30,17 +30,17 @@ public class TaskAllocator implements TaskListVisitor, TaskAllocatorStrategy {
 	}
 	
 	@Override
-	public void addTask(AtomicTask task) {
+	public void allocateTask(AtomicTask task) {
 		executableTasks.addTask(task);
 	}
 
 	@Override
-	public void addTask(ScheduledTask task) {
+	public void allocateTask(ScheduledTask task) {
 		scheduledTasks.addTask(task);
 	}
 
 	@Override
-	public void addTask(ManagementTask task) {
+	public void allocateTask(ManagementTask task) {
 		executableTasks.addTask(task);
 	}
 }
