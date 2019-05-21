@@ -170,7 +170,7 @@ public class TaskManager implements Beatable, Observer, Loggable { //Manager_UNU
 	public void updateObserver(ObserverMessage msg) {
 		// Get message from HO. Only interested in a shutdown message.
 		if(msg == ObserverMessage.STOPPING && shuttingDown == false) {
-			pause(500); // Pause to see if any shutdown tasks are added. TODO - Remove?
+			pause(500); // Pause to see if any shutdown tasks are added. 
 			shutDownTaskManager(1);
 		}
 	}
