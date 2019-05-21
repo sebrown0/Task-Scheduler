@@ -39,7 +39,7 @@ import utils.logger.Loggable;
  *  If it is a scheduled task it is added to the queue so that it can be executed at the correct time.
  */
 
-public class TaskManager implements Beatable, Observer, Manager, Loggable {
+public class TaskManager implements Beatable, Observer, Loggable { //Manager_UNUSED
 	
 	private Timer appTimer = null;				// Application Timer.
 	private BeatingHeart beatingHeart = null;	// HeartBeat of the scheduler.
