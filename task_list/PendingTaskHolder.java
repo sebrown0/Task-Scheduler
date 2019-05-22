@@ -1,44 +1,48 @@
 package task_list;
 
-import java.util.function.BiConsumer;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 import tasks.task_super_objects.Task;
+import utils.logger.Log;
+import utils.logger.Loggable;
 
 /**
  * 
  * @author Steve Brown
  *
- *  Holds the tasks that the department manager has not been able to assign.
+ *  Holds the tasks that the department manager 
+ *  has not been able to assign or tasks that have failed.
  *  
  */
-public class PendingTaskHolder implements PendingTaskList{
+public class PendingTaskHolder implements PendingTaskList, Loggable{
 
-	Multimap<TaskPending, Task> pendingTasks = ArrayListMultimap.create();
-
-	@FunctionalInterface
-	public interface LogPendingTasks{
-		void logPendingTasks(TaskPending p, Task t);
-	}
+	Multimap<TaskPendingType, Task> pendingTasks = ArrayListMultimap.create();
 	
 	@Override
-	public void addTask(TaskPending reason, Task t) {
+	public void addTask(TaskPendingType reason, Task t) {
 		pendingTasks.put(reason, t);
 	}
 
+	public Multimap<TaskPendingType, Task> getMapOfPendingType(TaskPendingType type){
+		return Multimaps.filterKeys(pendingTasks, v -> v.reason().compareToIgnoreCase(type.reason()) == 0);
+	}
+	
 	@Override
-	public void logPendingTasks() {
-		System.out.println("--------------------- LOGGING PENDING TASKS ---------------------");
-		BiConsumer<TaskPending, Task> logPending = (p,t) -> {
-			System.out.println(p);
-			System.out.println(t.objectID());
-//			for (PendingType pending : pendingTasks.asMap().keySet()) {
-//				
-//			}
-		};
-		
-//		pendingTasks.forEach(logPending);
+	public void logPendingTasks(Log log) {
+		writePendingMapToLog(log, pendingTasks, "All");
+	}
+
+	@Override
+	public void logPendingTasks(Log log, TaskPendingType type) {
+		Multimap<TaskPendingType, Task> pending = getMapOfPendingType(type);
+		writePendingMapToLog(log, pending, type.reason());
+	}
+	
+	private void writePendingMapToLog(Log log, Multimap<TaskPendingType, Task> pending, String type) {
+		log.logEntry(this, String.format("----------------- %s Pending Tasks-----------------", type));
+		for (Task t : pending.values()) 
+			log.logEntry(this, t.objectID());
 	}
 }
